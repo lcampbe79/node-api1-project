@@ -23,6 +23,20 @@ server.get('/api/users', (req, res) => {
   })
 })
 
+//GETs user by id
+server.get('/api/users/:id', (req, res) => {
+  const {id} = req.params;
+
+  db.findById(id)
+  .then(user => {
+    if (user) {
+      res.status(201).json(user)
+    } else {
+      res.status(404).json({errorMessage: "The user with the specified ID does not exist."})
+    }
+  })
+})
+
 //Adds new user
 server.post('/api/users', (req, res) => {
   
