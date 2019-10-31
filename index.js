@@ -1,6 +1,8 @@
 // implement your API here
-const express = require('express');
+require('dotenv').config();
 
+const express = require('express');
+console.log(`\n message:`, process.env.MSG)
 const server = express();
 
 const db = require('./data/db')
@@ -9,17 +11,17 @@ server.use(express.json());
 
 //initial GET
 server.get('/', (req, res) => {
-  res.send('Daily Challenge Node API 1!');
+  res.status(200).json({message: process.env.MSG});
 });
 
 //GETs all users
 server.get('/api/users', (req, res) => {
   db.find()
   .then((users) => {
-    res.status(201).json(users)
+    res.status(200).json(users)
   })
   .catch((err) => {
-    res.status(400).json({errorMessage: "The users information could not be retrieved." })
+    res.status(500).json({errorMessage: "The users information could not be retrieved." })
   })
 })
 
@@ -30,12 +32,15 @@ server.get('/api/users/:id', (req, res) => {
   db.findById(id)
   .then(user => {
     if (user) {
-      res.status(201).json(user)
+      res.status(200).json(user)
     } else {
       res.status(404).json({errorMessage: "The user with the specified ID does not exist."})
     }
   })
-})
+  .catch((err) => {
+    res.status(500).json({errorMessage: "The users information could not be retrieved." })
+  });
+});
 
 //Adds new user
 server.post('/api/users', (req, res) => {
@@ -49,7 +54,10 @@ server.post('/api/users', (req, res) => {
 
   db.insert(userInfo)
   .then(users => {
-    res.status(201).json(users)
+    //console.log(users)
+    db.findById(users.id).then(updatedUser => {//this is the servers response
+      res.json(updatedUser)
+    })
   })
   .catch((err) =>{
     res.status(500).json({errorMessage: "There was an error while saving the user to the database." })
@@ -87,7 +95,7 @@ server.delete('/api/users/:id', (req, res) => {
   db.remove(id)
   .then(user => {
     if (user) {
-      res.status(201).json({message: `User at id ${id} was removed!`})
+      res.status(200).json({message: `User at id ${id} was removed!`})
     } else {
       res.status(404).json({errorMessage: "The user with the specified ID does not exist."})
     }
@@ -97,7 +105,8 @@ server.delete('/api/users/:id', (req, res) => {
   })
 })
 
+const port = process.env.PORT || 8000;
 
-server.listen(8000, () => {
-  console.log('\n**Here comes the data!**\n')
+server.listen(port, () => {
+  console.log(`\n**Here comes the data on ${port}!**\n`)
 })
